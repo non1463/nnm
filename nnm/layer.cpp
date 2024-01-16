@@ -5,12 +5,34 @@
 #include <iostream>
 #define print(e) std::cout<<e<<std::endl
 
+double Linear(double x) { return x; }
+double Relu(double x) { return std::max(0., x); }
+
+double Linear_(double x) { return 1; }
+double Relu_(double x) { return (x>=0.?1.:0.); }
+
+void Layer::LoadActivation()
+{
+	switch (activationId)
+	{
+	case 0:
+		ActivationFunction = &Linear; 
+		ActivationDerivative = &Linear_;
+		break;
+	case 1:
+		ActivationFunction = &Relu; 
+		ActivationDerivative = &Relu_;
+		break;
+	}
+}
 
 Layer::Layer()
 {
 	inputNodesNum = 1u;
 	outputNodesNum = 1u;
-	activationFunc = 0;
+
+	activationId = 0;
+	LoadActivation();
 
 	bias = new double[1];
 	output = new double[1];
@@ -31,7 +53,7 @@ Layer::~Layer()
 }
 
 
-void Layer::Create(unsigned inputNodesNum_, unsigned outputNodesNum_, char activationFunc_)
+void Layer::Create(unsigned inputNodesNum_, unsigned outputNodesNum_, char activationId_)
 {
 	// clear old arrays
 	delete[] bias;
@@ -45,7 +67,9 @@ void Layer::Create(unsigned inputNodesNum_, unsigned outputNodesNum_, char activ
 	// define new sizes
 	inputNodesNum = inputNodesNum_;
 	outputNodesNum = outputNodesNum_;
-	activationFunc = activationFunc_;
+
+	activationId = activationId_;
+	LoadActivation();
 
 	// redefine arrays
 	bias = new double[outputNodesNum];
@@ -72,7 +96,7 @@ void Layer::Save(std::ofstream& file)
 
 	*/
 
-	file.write((char*)&activationFunc, sizeof(char));
+	file.write((char*)&activationId, sizeof(char));
 	file.write((char*)&inputNodesNum, sizeof(unsigned));
 	file.write((char*)&outputNodesNum, sizeof(unsigned));
 
@@ -107,6 +131,10 @@ void Layer::Load(std::ifstream& file)
 
 	*/
 
+	// load activation function
+	file.read((char*)&activationId, sizeof(char));
+	LoadActivation();
+
 	// clear old arrays
 	delete[] bias;
 	delete[] output;
@@ -117,7 +145,6 @@ void Layer::Load(std::ifstream& file)
 	delete[] weights;
 
 	// load sizes
-	file.read((char*)&activationFunc, sizeof(char));
 	file.read((char*)&inputNodesNum, sizeof(unsigned));
 	file.read((char*)&outputNodesNum, sizeof(unsigned));
 
@@ -168,6 +195,7 @@ double* Layer::CalculateOutput(double* input)
 		for (unsigned in = 0; in < inputNodesNum; in++)
 		{
 			output[out] += weights[in][out] * input[in];
+			output[out] = ActivationFunction(output[out]);
 		}
 	}
 	return output;

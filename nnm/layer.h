@@ -20,11 +20,15 @@ private:
 	unsigned inputNodesNum = 0u, outputNodesNum = 0u;
 
 	double* bias;
-	
 	double** weights;
 
 	double* output;
 
-	char activationFunc;
+	char activationId;
+	double (*ActivationFunction)(double);
+	double (*ActivationDerivative)(double);
+	void LoadActivation();
+
+
 };
 

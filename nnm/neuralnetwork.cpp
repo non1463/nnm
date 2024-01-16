@@ -6,6 +6,8 @@
 #include <iostream>
 #define print(e) std::cout<<e<<std::endl
 
+
+
 NeuralNetwork::NeuralNetwork()
 {
 	layersNum = 1;
