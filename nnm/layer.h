@@ -24,9 +24,9 @@ private:
 
 	double* output;
 
-	char activationId;
+	char activationId; // 0->Linear, 1->Relu, 2->
 	double (*ActivationFunction)(double);
-	double (*ActivationDerivative)(double);
+	double (*ActivationDerivativeFromFunctionResult)(double); // /!\ calculate the derivative with the activation function result in argument 
 	void LoadActivation();
 
 

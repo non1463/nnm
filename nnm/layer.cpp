@@ -7,9 +7,15 @@
 
 double Linear(double x) { return x; }
 double Relu(double x) { return std::max(0., x); }
+// tanh alredy defined
+double Sigmoid(double x) { return 1. / (1. + exp(-x)); }
+double Elu(double x) { return x<=0?exp(x)-1.:x; }
 
-double Linear_(double x) { return 1; }
-double Relu_(double x) { return (x>=0.?1.:0.); }
+double Linear_(double x) { return 1.; } // /!\ calculate the derivative with the activation function result in argument 
+double Relu_(double x) { return (x!=0.?1.:0.); }
+double Tanh_(double x) { return 1. - (x * x); }
+double Sigmoid_(double x) { return x * (1. - x); }
+double Elu_(double x) { return x < 0. ? x+1. : 1.; }
 
 void Layer::LoadActivation()
 {
@@ -17,11 +23,23 @@ void Layer::LoadActivation()
 	{
 	case 0:
 		ActivationFunction = &Linear; 
-		ActivationDerivative = &Linear_;
+		ActivationDerivativeFromFunctionResult = &Linear_;
 		break;
 	case 1:
 		ActivationFunction = &Relu; 
-		ActivationDerivative = &Relu_;
+		ActivationDerivativeFromFunctionResult = &Relu_;
+		break;
+	case 3:
+		ActivationFunction = &tanh;
+		ActivationDerivativeFromFunctionResult = &Tanh_;
+		break;
+	case 4:
+		ActivationFunction = &Sigmoid;
+		ActivationDerivativeFromFunctionResult = &Sigmoid_;
+		break;
+	case 5:
+		ActivationFunction = &Elu;
+		ActivationDerivativeFromFunctionResult = &Elu_;
 		break;
 	}
 }
