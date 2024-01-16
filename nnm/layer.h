@@ -4,6 +4,10 @@
 class Layer
 {
 public:
+	Layer();
+	Layer(unsigned inputNodesNum, unsigned outputNodesNum, char activationFunc);
+	~Layer();
+
 	void Save(std::ofstream& file);
 	void Load(std::ifstream& file);
 

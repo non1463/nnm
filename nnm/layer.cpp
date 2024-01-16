@@ -1,17 +1,44 @@
 #include "layer.h"
 #include <fstream>
 
-double* Layer::CalculateOutput(double* input)
+
+
+Layer::Layer()
 {
-	for (unsigned out = 0; out < outputNodesNum; out++)
+	inputNodesNum = 1u;
+	outputNodesNum = 1u;
+	activationFunc = 0;
+	bias = new double[1];
+	weights = new double* [1];
+	weights[0] = new double[1];
+	output = new double[1];
+}
+
+Layer::Layer(unsigned inputNodesNum_, unsigned outputNodesNum_, char activationFunc_)
+{
+	inputNodesNum = inputNodesNum_;
+	outputNodesNum = outputNodesNum_;
+	activationFunc = activationFunc_;
+
+	bias = new double[outputNodesNum];
+	output = new double[outputNodesNum];
+
+	weights = new double* [inputNodesNum];
+	for (unsigned in = 0; in < inputNodesNum; in++)
 	{
-		output[out] = bias[out];
-		for (unsigned in = 0; in < inputNodesNum; in++)
-		{
-			output[out] += weights[in][out] * input[in];
-		}
+		weights[in] = new double[outputNodesNum];
 	}
-	return output;
+}
+
+Layer::~Layer()
+{
+	delete[] bias;
+	delete[] output;
+	for (unsigned in = 0; in < inputNodesNum; in++)
+	{
+		delete[] weights[in];
+	}
+	delete[] weights;
 }
 
 
@@ -63,6 +90,26 @@ void Layer::Load(std::ifstream& file)
 	file.read((char*)&inputNodesNum, sizeof(unsigned));
 	file.read((char*)&outputNodesNum, sizeof(unsigned));
 
+	// clear old arrays
+	delete[] bias;
+	delete[] output;
+	for (unsigned in = 0; in < inputNodesNum; in++)
+	{
+		delete[] weights[in];
+	}
+	delete[] weights;
+
+	// redefine arrays
+	bias = new double[outputNodesNum];
+	output = new double[outputNodesNum];
+	weights = new double* [inputNodesNum];
+	for (unsigned in = 0; in < inputNodesNum; in++)
+	{
+		weights[in] = new double[outputNodesNum];
+	}
+
+
+	// load values
 	for (unsigned out = 0; out < outputNodesNum; out++)
 	{
 		file.read((char*)&bias[out], sizeof(double));
@@ -77,3 +124,20 @@ void Layer::Load(std::ifstream& file)
 	}
 
 }
+
+
+
+double* Layer::CalculateOutput(double* input)
+{
+	for (unsigned out = 0; out < outputNodesNum; out++)
+	{
+		output[out] = bias[out];
+		for (unsigned in = 0; in < inputNodesNum; in++)
+		{
+			output[out] += weights[in][out] * input[in];
+		}
+	}
+	return output;
+}
+
+
