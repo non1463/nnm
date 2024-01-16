@@ -146,6 +146,18 @@ void Layer::Load(std::ifstream& file)
 
 }
 
+void Layer::Clear()
+{
+	for (unsigned out = 0; out < outputNodesNum; out++)
+	{
+		bias[out] = 0.;
+		for (unsigned in = 0; in < inputNodesNum; in++)
+		{
+			weights[in][out] = 0.;
+		}
+	}
+}
+
 
 
 double* Layer::CalculateOutput(double* input)

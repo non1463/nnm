@@ -10,8 +10,10 @@ public:
 	void Create(unsigned inputNodesNum, unsigned outputNodesNum, char activationFunc);
 	void Save(std::ofstream& file);
 	void Load(std::ifstream& file);
+	void Clear();
 
 	double* CalculateOutput(double* input);
+
 
 
 private:

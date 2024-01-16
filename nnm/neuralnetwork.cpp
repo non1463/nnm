@@ -62,3 +62,22 @@ void NeuralNetwork::Load(std::string path)
 
 	file.close();
 }
+
+void NeuralNetwork::Clear()
+{
+	for (unsigned i = 0; i < layersNum; i++)
+	{
+		layers[i].Clear();
+	}
+}
+
+
+
+double* NeuralNetwork::CalculateOutput(double* val)
+{
+	for (unsigned i = 0; i < layersNum; i++)
+	{
+		val = layers[i].CalculateOutput(val);
+	}
+	return val;
+}
