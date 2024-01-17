@@ -1,6 +1,7 @@
 #include "data.h"
 #include <string>
 #include <fstream>
+#include <vector>
 
 #include <iostream>
 #define print(e) std::cout<<e<<std::endl
@@ -198,4 +199,28 @@ void Data::Save(std::string path)
 
 
 	file.close();
+}
+
+void Data::Create(std::vector<Point> points)
+{
+	delete[] arr;
+
+	size = points.size();
+	inputSize = points[0].inputSize;
+	outputSize = points[0].outputSize;
+
+	arr = new Point[size];
+
+	for (unsigned long long i = 0; i < size; i++)
+	{
+		arr[i].SetSize(inputSize, outputSize);
+		for (unsigned in = 0; in < inputSize; in++)
+		{
+			arr[i].input[in] = points[i].input[in];
+		}
+		for (unsigned out = 0; out < outputSize; out++)
+		{
+			arr[i].output[out] = points[i].output[out];
+		}
+	}
 }

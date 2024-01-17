@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <fstream>
+#include <vector>
 
 class Point
 {
@@ -37,6 +38,7 @@ public:
 
 	void Load(std::string path);
 	void Save(std::string path);
+	void Create(std::vector<Point> points);
 
 	void FillBatch(Batch& batch);
 	Batch GetAllPointsBatch();
