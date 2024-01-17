@@ -1,6 +1,10 @@
 #include "layer.h"
 #include <fstream>
 
+#define deleteAllArrays delete[] bias;delete[] costGradientB;delete[] output;delete[] weightedInput;for (unsigned in = 0; in < inputNodesNum; in++){delete[] weights[in];delete[] costGradientW[in];}delete[] weights;delete[] costGradientW;
+#define createAllArrays bias = new double[outputNodesNum];costGradientB = new double[outputNodesNum];output = new double[outputNodesNum];weightedInput = new double[outputNodesNum];weights = new double* [inputNodesNum];costGradientW = new double* [inputNodesNum];for (unsigned in = 0; in < inputNodesNum; in++){weights[in] = new double[outputNodesNum];costGradientW[in] = new double[outputNodesNum];}
+
+
 #include <iostream>
 #define print(e) std::cout<<e<<std::endl
 
@@ -43,6 +47,19 @@ void Layer::LoadActivation()
 	}
 }
 
+
+double Layer::NodeCost(double output, double expected_output)
+{
+	double error = output - expected_output;
+	return error * error;
+}
+
+double Layer::NodeCostDerivative(double output, double expected_output)
+{
+	return 2 * (output - expected_output);
+}
+
+
 Layer::Layer()
 {
 	inputNodesNum = 1u;
@@ -51,53 +68,30 @@ Layer::Layer()
 	activationId = 0;
 	LoadActivation();
 
-	bias = new double[1];
-	output = new double[1];
-
-	weights = new double* [1];
-	weights[0] = new double[1];
+	createAllArrays
 }
 
 Layer::~Layer()
 {
-	delete[] bias;
-	delete[] output;
-	for (unsigned in = 0; in < inputNodesNum; in++)
-	{
-		delete[] weights[in];
-	}
-	delete[] weights;
+	deleteAllArrays
 }
 
 
 void Layer::Create(unsigned inputNodesNum_, unsigned outputNodesNum_, char activationId_)
 {
- // load activation function
+	// load activation function
 	activationId = activationId_;
 	LoadActivation();
 
 	// clear old arrays
-	delete[] bias;
-	delete[] output;
-	for (unsigned in = 0; in < inputNodesNum; in++)
-	{
-		delete[] weights[in];
-	}
-	delete[] weights;
+	deleteAllArrays
 
 	// define new sizes
 	inputNodesNum = inputNodesNum_;
 	outputNodesNum = outputNodesNum_;
 
 	// redefine arrays
-	bias = new double[outputNodesNum];
-	output = new double[outputNodesNum];
-
-	weights = new double* [inputNodesNum];
-	for (unsigned in = 0; in < inputNodesNum; in++)
-	{
-		weights[in] = new double[outputNodesNum];
-	}
+	createAllArrays
 }
 
 
@@ -154,28 +148,17 @@ void Layer::Load(std::ifstream& file)
 	LoadActivation();
 
 	// clear old arrays
-	delete[] bias;
-	delete[] output;
-	for (unsigned in = 0; in < inputNodesNum; in++)
-	{
-		delete[] weights[in];
-	}
-	delete[] weights;
+	deleteAllArrays
+
 
 	// load sizes
 	file.read((char*)&inputNodesNum, sizeof(unsigned));
 	file.read((char*)&outputNodesNum, sizeof(unsigned));
 
 	// redefine arrays
-	bias = new double[outputNodesNum];
-	output = new double[outputNodesNum];
-	weights = new double* [inputNodesNum];
-	for (unsigned in = 0; in < inputNodesNum; in++)
-	{
-		weights[in] = new double[outputNodesNum];
-	}
+	createAllArrays
 
-	// load values
+	// read values
 	for (unsigned out = 0; out < outputNodesNum; out++)
 	{
 		file.read((char*)&bias[out], sizeof(double));
@@ -205,18 +188,72 @@ void Layer::Clear()
 
 
 
-double* Layer::CalculateOutput(double* input)
+double* Layer::CalculateOutput(double* input_)
 {
+	input = input_;
 	for (unsigned out = 0; out < outputNodesNum; out++)
 	{
-		output[out] = bias[out];
+		weightedInput[out] = bias[out];
 		for (unsigned in = 0; in < inputNodesNum; in++)
 		{
-			output[out] += weights[in][out] * input[in];
-			output[out] = ActivationFunction(output[out]);
+			weightedInput[out] += weights[in][out] * input[in];
+			output[out] = ActivationFunction(weightedInput[out]);
 		}
 	}
 	return output;
 }
 
 
+
+void Layer::CalculateNodeValues(double* val)
+{
+	for (unsigned out = 0; out < outputNodesNum; out++)
+	{
+		val[out] = NodeCostDerivative(weightedInput[out], val[out]) * ActivationDerivativeFromFunctionResult(output[out]);
+	}
+}
+
+void Layer::CalculateHiddenNodeValues(Layer& oldLayer, double*&val)
+{
+	double* newVal;
+	newVal = new double[outputNodesNum];
+
+	for (unsigned inew = 0; inew < outputNodesNum; inew++)
+	{
+		newVal[inew] = 0.;
+		for (unsigned iold = 0; iold < oldLayer.outputNodesNum; iold++)
+		{
+			newVal[inew] += oldLayer.weights[inew][iold] * val[iold];
+		}
+		newVal[inew] *= ActivationDerivativeFromFunctionResult(output[inew]);
+	}
+
+
+	delete[] val;
+	val = newVal; // pointing the value to the new array
+}
+
+
+void Layer::UpdateGradient(double* val)
+{
+	for (int out = 0; out < outputNodesNum; out++)
+	{
+		costGradientB[out] += val[out];
+		for (int in = 0; in < inputNodesNum; in++)
+		{
+			costGradientW[in][out] += input[in] * val[out];
+		}
+	}
+}
+
+void Layer::ClearGradient()
+{
+	for (int out = 0; out < outputNodesNum; out++)
+	{
+		costGradientB[out] = 0.;
+		for (int in = 0; in < inputNodesNum; in++)
+		{
+			costGradientW[in][out] = 0.;
+		}
+	}
+}
