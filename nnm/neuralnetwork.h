@@ -19,6 +19,7 @@ public:
 
 	void UpdateAllGradients(Point& point);
 	void ClearAllGradients();
+	void ClearAllMomentumGradients();
 	void ApplyAllGradients(double learnRate, double momentum);
 	void Learn(Batch& batch, double learnRate, double momentum);
 

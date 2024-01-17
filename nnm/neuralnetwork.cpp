@@ -12,6 +12,9 @@ NeuralNetwork::NeuralNetwork()
 {
 	layersNum = 1;
 	layers = new Layer[1];
+
+	ClearAllGradients();
+	ClearAllMomentumGradients();
 }
 
 NeuralNetwork::~NeuralNetwork()
@@ -30,6 +33,9 @@ void NeuralNetwork::Create(unsigned layersNum_, unsigned* layerSize, char* layer
 	{
 		layers[i].Create(layerSize[i], layerSize[i + 1], layerActivation[i]);
 	}
+
+	ClearAllGradients();
+	ClearAllMomentumGradients();
 }
 
 
@@ -63,6 +69,9 @@ void NeuralNetwork::Load(std::string path)
 	}
 
 	file.close();
+
+	ClearAllGradients();
+	ClearAllMomentumGradients();
 }
 
 void NeuralNetwork::Clear()
@@ -92,7 +101,7 @@ void NeuralNetwork::UpdateAllGradients(Point& point)
 	val = layers[layersNum - 1].CalculateNodeValues(point.output);
 	layers[layersNum - 1].UpdateGradient(val);
 
-	for (unsigned i = layersNum - 2; i >= 0; i--)
+	for (int i = (int)layersNum - 2; i >= 0; i--)
 	{
 		val = layers[i].CalculateHiddenNodeValues(layers[i + 1], val);
 		layers[i].UpdateGradient(val);
@@ -105,6 +114,14 @@ void NeuralNetwork::ClearAllGradients()
 	for (unsigned i = 0; i < layersNum; i++)
 	{
 		layers[i].ClearGradient();
+	}
+}
+
+void NeuralNetwork::ClearAllMomentumGradients()
+{
+	for (unsigned i = 0; i < layersNum; i++)
+	{
+		layers[i].ClearMomentumGradient();
 	}
 }
 
@@ -122,7 +139,7 @@ void NeuralNetwork::Learn(Batch& batch, double learnRate, double momentum)
 
 	for (unsigned i = 0; i < batch.size; i++)
 	{
-		UpdateAllGradients(batch.set[i]);
+		UpdateAllGradients(*batch.arr[i]);
 	}
 
 	ApplyAllGradients(learnRate / ((double)batch.size), momentum);
