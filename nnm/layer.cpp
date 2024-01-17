@@ -1,6 +1,5 @@
 #include "layer.h"
 #include <fstream>
-#include <iostream>
 
 #include <iostream>
 #define print(e) std::cout<<e<<std::endl
@@ -73,6 +72,10 @@ Layer::~Layer()
 
 void Layer::Create(unsigned inputNodesNum_, unsigned outputNodesNum_, char activationId_)
 {
+ // load activation function
+	activationId = activationId_;
+	LoadActivation();
+
 	// clear old arrays
 	delete[] bias;
 	delete[] output;
@@ -85,9 +88,6 @@ void Layer::Create(unsigned inputNodesNum_, unsigned outputNodesNum_, char activ
 	// define new sizes
 	inputNodesNum = inputNodesNum_;
 	outputNodesNum = outputNodesNum_;
-
-	activationId = activationId_;
-	LoadActivation();
 
 	// redefine arrays
 	bias = new double[outputNodesNum];
