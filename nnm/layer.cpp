@@ -1,8 +1,8 @@
 #include "layer.h"
 #include <fstream>
 
-#define deleteAllArrays delete[] bias;delete[] costGradientB;delete[] output;delete[] weightedInput;for (unsigned in = 0; in < inputNodesNum; in++){delete[] weights[in];delete[] costGradientW[in];}delete[] weights;delete[] costGradientW;
-#define createAllArrays bias = new double[outputNodesNum];costGradientB = new double[outputNodesNum];output = new double[outputNodesNum];weightedInput = new double[outputNodesNum];weights = new double* [inputNodesNum];costGradientW = new double* [inputNodesNum];for (unsigned in = 0; in < inputNodesNum; in++){weights[in] = new double[outputNodesNum];costGradientW[in] = new double[outputNodesNum];}
+#define deleteAllArrays delete[] biases;delete[] costGradientB;delete[] momentumGradientB;delete[] output;delete[] weightedInput;for (unsigned in = 0; in < inputNodesNum; in++){delete[] weights[in];delete[] costGradientW[in];delete[] momentumGradientW[in];}delete[] weights;delete[] costGradientW;delete[] momentumGradientW;
+#define createAllArrays biases = new double[outputNodesNum];costGradientB = new double[outputNodesNum];momentumGradientB = new double[outputNodesNum];output = new double[outputNodesNum];weightedInput = new double[outputNodesNum];weights = new double* [inputNodesNum];costGradientW = new double* [inputNodesNum];momentumGradientW = new double* [inputNodesNum];for (unsigned in = 0; in < inputNodesNum; in++){weights[in] = new double[outputNodesNum];costGradientW[in] = new double[outputNodesNum];momentumGradientW[in] = new double[outputNodesNum];}
 
 
 #include <iostream>
@@ -103,7 +103,7 @@ void Layer::Save(std::ofstream& file)
 	activationFunc (char)
 	inputNodesNum (unsigned)
 	outputNodesNum (unsigned)
-	bias (double)*out
+	biases (double)*out
 	weights (double)*in*out
 
 	*/
@@ -116,7 +116,7 @@ void Layer::Save(std::ofstream& file)
 
 	for (unsigned out = 0; out < outputNodesNum; out++)
 	{
-		file.write((char*)&bias[out], sizeof(double));
+		file.write((char*)&biases[out], sizeof(double));
 	}
 
 	for (unsigned in = 0; in < inputNodesNum; in++)
@@ -138,7 +138,7 @@ void Layer::Load(std::ifstream& file)
 	activationFunc (char)
 	inputNodesNum (unsigned)
 	outputNodesNum (unsigned)
-	bias (double)*out
+	biases (double)*out
 	weights (double)*in*out
 
 	*/
@@ -161,7 +161,7 @@ void Layer::Load(std::ifstream& file)
 	// read values
 	for (unsigned out = 0; out < outputNodesNum; out++)
 	{
-		file.read((char*)&bias[out], sizeof(double));
+		file.read((char*)&biases[out], sizeof(double));
 	}
 
 	for (unsigned in = 0; in < inputNodesNum; in++)
@@ -178,7 +178,7 @@ void Layer::Clear()
 {
 	for (unsigned out = 0; out < outputNodesNum; out++)
 	{
-		bias[out] = 0.;
+		biases[out] = 0.;
 		for (unsigned in = 0; in < inputNodesNum; in++)
 		{
 			weights[in][out] = 0.;
@@ -193,7 +193,7 @@ double* Layer::CalculateOutput(double* input_)
 	input = input_;
 	for (unsigned out = 0; out < outputNodesNum; out++)
 	{
-		weightedInput[out] = bias[out];
+		weightedInput[out] = biases[out];
 		for (unsigned in = 0; in < inputNodesNum; in++)
 		{
 			weightedInput[out] += weights[in][out] * input[in];
@@ -205,15 +205,20 @@ double* Layer::CalculateOutput(double* input_)
 
 
 
-void Layer::CalculateNodeValues(double* val)
+double* Layer::CalculateNodeValues(double* val)
 {
+	double* newVal;
+	newVal = new double[outputNodesNum];
+
 	for (unsigned out = 0; out < outputNodesNum; out++)
 	{
-		val[out] = NodeCostDerivative(weightedInput[out], val[out]) * ActivationDerivativeFromFunctionResult(output[out]);
+		newVal[out] = NodeCostDerivative(weightedInput[out], val[out]) * ActivationDerivativeFromFunctionResult(output[out]);
 	}
+
+	return newVal;
 }
 
-void Layer::CalculateHiddenNodeValues(Layer& oldLayer, double*&val)
+double* Layer::CalculateHiddenNodeValues(Layer& oldLayer, double* val)
 {
 	double* newVal;
 	newVal = new double[outputNodesNum];
@@ -228,9 +233,8 @@ void Layer::CalculateHiddenNodeValues(Layer& oldLayer, double*&val)
 		newVal[inew] *= ActivationDerivativeFromFunctionResult(output[inew]);
 	}
 
-
 	delete[] val;
-	val = newVal; // pointing the value to the new array
+	return newVal;
 }
 
 
@@ -254,6 +258,32 @@ void Layer::ClearGradient()
 		for (int in = 0; in < inputNodesNum; in++)
 		{
 			costGradientW[in][out] = 0.;
+		}
+	}
+}
+
+void Layer::ClearMomentumGradient()
+{
+	for (int out = 0; out < outputNodesNum; out++)
+	{
+		momentumGradientB[out] = 0.;
+		for (int in = 0; in < inputNodesNum; in++)
+		{
+			momentumGradientW[in][out] = 0.;
+		}
+	}
+}
+
+void Layer::ApplyGradient(double learnRate, double momentum)
+{
+	for (int out = 0; out < outputNodesNum; out++)
+	{
+		momentumGradientB[out] = momentum * momentumGradientB[out] + (1 - momentum) * costGradientB[out];
+		biases[out] -= momentumGradientB[out] * learnRate;
+		for (int in = 0; in < inputNodesNum; in++)
+		{
+			momentumGradientW[in][out] = momentum * momentumGradientW[in][out] + (1 - momentum) * costGradientW[in][out];
+			weights[in][out] -= momentumGradientW[in][out] * learnRate;
 		}
 	}
 }

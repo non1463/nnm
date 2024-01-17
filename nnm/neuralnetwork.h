@@ -1,6 +1,7 @@
 #pragma once
 
 #include "layer.h"
+#include "data.h"
 #include <string>
 
 class NeuralNetwork
@@ -15,6 +16,11 @@ public:
 	void Clear();
 
 	double* CalculateOutput(double* input);
+
+	void UpdateAllGradients(Point& point);
+	void ClearAllGradients();
+	void ApplyAllGradients(double learnRate, double momentum);
+	void Learn(Batch& batch, double learnRate, double momentum);
 
 private:
 	Layer* layers;

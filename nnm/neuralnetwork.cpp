@@ -83,3 +83,47 @@ double* NeuralNetwork::CalculateOutput(double* val)
 	}
 	return val;
 }
+
+void NeuralNetwork::UpdateAllGradients(Point& point)
+{
+	CalculateOutput(point.input);
+	double* val;
+
+	val = layers[layersNum - 1].CalculateNodeValues(point.output);
+	layers[layersNum - 1].UpdateGradient(val);
+
+	for (unsigned i = layersNum - 2; i >= 0; i--)
+	{
+		val = layers[i].CalculateHiddenNodeValues(layers[i + 1], val);
+		layers[i].UpdateGradient(val);
+	}
+	delete[] val;
+}
+
+void NeuralNetwork::ClearAllGradients()
+{
+	for (unsigned i = 0; i < layersNum; i++)
+	{
+		layers[i].ClearGradient();
+	}
+}
+
+void NeuralNetwork::ApplyAllGradients(double learnRate, double momentum)
+{
+	for (unsigned i = 0; i < layersNum; i++)
+	{
+		layers[i].ApplyGradient(learnRate, momentum);
+	}
+}
+
+void NeuralNetwork::Learn(Batch& batch, double learnRate, double momentum)
+{
+	ClearAllGradients();
+
+	for (unsigned i = 0; i < batch.size; i++)
+	{
+		UpdateAllGradients(batch.set[i]);
+	}
+
+	ApplyAllGradients(learnRate / ((double)batch.size), momentum);
+}

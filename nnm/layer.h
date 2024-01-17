@@ -14,14 +14,16 @@ public:
 
 	double* CalculateOutput(double* input);
 
-	void CalculateNodeValues(double* array);
-	void CalculateHiddenNodeValues(Layer& oldLayer, double*& array);
+	double* CalculateNodeValues(double* val);
+	double* CalculateHiddenNodeValues(Layer& oldLayer, double* val);
 	void UpdateGradient(double* val);
 	void ClearGradient();
+	void ClearMomentumGradient();
+	void ApplyGradient(double learnRate, double momentum);
 
 	unsigned inputNodesNum = 0u, outputNodesNum = 0u;
 
-	double* bias;
+	double* biases;
 	double** weights;
 
 	double* input; // not stored into the class (pointer to the output of the last layer)
@@ -30,7 +32,9 @@ public:
 
 private:
 	double* costGradientB;
+	double* momentumGradientB;
 	double** costGradientW;
+	double** momentumGradientW;
 
 	char activationId; // 0->Linear, 1->Relu, 2->
 	double (*ActivationFunction)(double);
