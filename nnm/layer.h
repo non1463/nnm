@@ -11,6 +11,7 @@ public:
 	void Save(std::ofstream& file);
 	void Load(std::ifstream& file);
 	void Clear();
+	void Rand();
 
 	double* CalculateOutput(double* input);
 

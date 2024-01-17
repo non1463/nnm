@@ -15,7 +15,7 @@ void print_output(double* output, unsigned n)
 	cout << "max index : " << maxIndex(output, n) << endl;
 }
 
-unsigned sz[3] = { 1,5,1 };
+unsigned sz[3] = { 1,100,1 };
 char activation[2] = { 0,0 };
 
 double test[1] = { 1. };
@@ -30,32 +30,27 @@ Batch fullBatch(dat.GetAllPointsBatch());
 int main()
 {
 
-	dat.arr[0].input[0] = 0.;
-	dat.arr[0].output[0] = 1.;
-
-	dat.arr[1].input[0] = 1.;
-	dat.arr[1].output[0] = 0.;
-
-	dat.Save("data/test.dat");
 	dat.Load("data/test.dat");
 
-
-	/*
 	nn.Load("nn/test.nn");
-	nn.Clear();
 
-	unsigned _ = 0u;
+
+	unsigned _ = 100000u;
 	while (_--)
 	{
-		nn.Learn(fullBatch, 1., 0.);
+		nn.Learn(fullBatch, 0.1, 0.);
 	}
+	nn.Save("nn/test.nn");
+
 
 	output = nn.CalculateOutput(test);
 
 	print_output(output, 1);
 
-	cout << "expected : " << dat.arr[1].output[0] << endl;
-	*/
+	cout << "\nexpected : " << dat.arr[(int)test[0]].output[0] << endl;
+
+
+	
 
 	//cout << dat.arr[0].input[0] << endl << dat.size << endl;
 

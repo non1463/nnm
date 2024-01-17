@@ -82,6 +82,14 @@ void NeuralNetwork::Clear()
 	}
 }
 
+void NeuralNetwork::Rand()
+{
+	for (unsigned i = 0; i < layersNum; i++)
+	{
+		layers[i].Rand();
+	}
+}
+
 
 
 double* NeuralNetwork::CalculateOutput(double* val)
@@ -135,12 +143,11 @@ void NeuralNetwork::ApplyAllGradients(double learnRate, double momentum)
 
 void NeuralNetwork::Learn(Batch& batch, double learnRate, double momentum)
 {
-	ClearAllGradients();
-
-	for (unsigned i = 0; i < batch.size; i++)
+	for (unsigned long long i = 0; i < batch.size; i++)
 	{
 		UpdateAllGradients(*batch.arr[i]);
 	}
 
 	ApplyAllGradients(learnRate / ((double)batch.size), momentum);
+	ClearAllGradients();
 }

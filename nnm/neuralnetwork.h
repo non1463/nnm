@@ -14,6 +14,7 @@ public:
 	void Save(std::string path);
 	void Load(std::string path);
 	void Clear();
+	void Rand();
 
 	double* CalculateOutput(double* input);
 

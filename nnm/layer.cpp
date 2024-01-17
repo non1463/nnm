@@ -8,6 +8,7 @@
 #include <iostream>
 #define print(e) std::cout<<e<<std::endl
 
+
 double Linear(double x) { return x; }
 double Relu(double x) { return std::max(0., x); }
 // tanh alredy defined
@@ -32,15 +33,15 @@ void Layer::LoadActivation()
 		ActivationFunction = &Relu; 
 		ActivationDerivativeFromFunctionResult = &Relu_;
 		break;
-	case 3:
+	case 2:
 		ActivationFunction = &tanh;
 		ActivationDerivativeFromFunctionResult = &Tanh_;
 		break;
-	case 4:
+	case 3:
 		ActivationFunction = &Sigmoid;
 		ActivationDerivativeFromFunctionResult = &Sigmoid_;
 		break;
-	case 5:
+	case 4:
 		ActivationFunction = &Elu;
 		ActivationDerivativeFromFunctionResult = &Elu_;
 		break;
@@ -186,6 +187,27 @@ void Layer::Clear()
 	}
 }
 
+void Layer::Rand()
+{
+	unsigned x = time(NULL);
+	for (unsigned out = 0; out < outputNodesNum; out++)
+	{
+		x ^= x << 13;
+		x ^= x >> 17;
+		x ^= x << 5;
+		biases[out] = (double)x / (double)0xfffffffff;
+		biases[out] *= x % 2 == 0 ? 1. : -1.;
+		for (unsigned in = 0; in < inputNodesNum; in++)
+		{
+			x ^= x << 13;
+			x ^= x >> 17;
+			x ^= x << 5;
+			weights[in][out] = (double)x / (double)0xfffffffff;
+			weights[in][out] *= x % 2 == 0 ? 1. : -1.;
+		}
+	}
+}
+
 
 
 double* Layer::CalculateOutput(double* input_)
@@ -212,7 +234,7 @@ double* Layer::CalculateNodeValues(double* val)
 
 	for (unsigned out = 0; out < outputNodesNum; out++)
 	{
-		newVal[out] = NodeCostDerivative(weightedInput[out], val[out]) * ActivationDerivativeFromFunctionResult(output[out]);
+		newVal[out] = NodeCostDerivative(output[out], val[out]) * ActivationDerivativeFromFunctionResult(output[out]);
 	}
 
 	return newVal;
@@ -240,10 +262,10 @@ double* Layer::CalculateHiddenNodeValues(Layer& oldLayer, double* val)
 
 void Layer::UpdateGradient(double* val)
 {
-	for (int out = 0; out < outputNodesNum; out++)
+	for (unsigned out = 0; out < outputNodesNum; out++)
 	{
 		costGradientB[out] += val[out];
-		for (int in = 0; in < inputNodesNum; in++)
+		for (unsigned in = 0; in < inputNodesNum; in++)
 		{
 			costGradientW[in][out] += input[in] * val[out];
 		}
@@ -252,10 +274,10 @@ void Layer::UpdateGradient(double* val)
 
 void Layer::ClearGradient()
 {
-	for (int out = 0; out < outputNodesNum; out++)
+	for (unsigned out = 0; out < outputNodesNum; out++)
 	{
 		costGradientB[out] = 0.;
-		for (int in = 0; in < inputNodesNum; in++)
+		for (unsigned in = 0; in < inputNodesNum; in++)
 		{
 			costGradientW[in][out] = 0.;
 		}
@@ -264,10 +286,10 @@ void Layer::ClearGradient()
 
 void Layer::ClearMomentumGradient()
 {
-	for (int out = 0; out < outputNodesNum; out++)
+	for (unsigned out = 0; out < outputNodesNum; out++)
 	{
 		momentumGradientB[out] = 0.;
-		for (int in = 0; in < inputNodesNum; in++)
+		for (unsigned in = 0; in < inputNodesNum; in++)
 		{
 			momentumGradientW[in][out] = 0.;
 		}
@@ -276,13 +298,13 @@ void Layer::ClearMomentumGradient()
 
 void Layer::ApplyGradient(double learnRate, double momentum)
 {
-	for (int out = 0; out < outputNodesNum; out++)
+	for (unsigned out = 0; out < outputNodesNum; out++)
 	{
-		momentumGradientB[out] = momentum * momentumGradientB[out] + (1 - momentum) * costGradientB[out];
+		momentumGradientB[out] = momentum * momentumGradientB[out] + (1. - momentum) * costGradientB[out];
 		biases[out] -= momentumGradientB[out] * learnRate;
-		for (int in = 0; in < inputNodesNum; in++)
+		for (unsigned in = 0; in < inputNodesNum; in++)
 		{
-			momentumGradientW[in][out] = momentum * momentumGradientW[in][out] + (1 - momentum) * costGradientW[in][out];
+			momentumGradientW[in][out] = momentum * momentumGradientW[in][out] + (1. - momentum) * costGradientW[in][out];
 			weights[in][out] -= momentumGradientW[in][out] * learnRate;
 		}
 	}
