@@ -157,6 +157,7 @@ void Data::Load(std::string path)
 	file.read((char*)&inputSize, sizeof(unsigned));
 	file.read((char*)&outputSize, sizeof(unsigned));
 
+
 	// resize array
 	arr = new Point[size];
 
@@ -174,7 +175,7 @@ void Data::Load(std::string path)
 
 void Data::Save(std::string path)
 {
-	std::ofstream file(path, std::ios::in | std::ios::binary);
+	std::ofstream file(path, std::ios::out | std::ios::binary);
 	/* FILE FORMAT
 
 	data_size (unsigned long long)

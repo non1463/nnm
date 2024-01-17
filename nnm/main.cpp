@@ -37,7 +37,10 @@ int main()
 	dat.arr[1].output[0] = 0.;
 
 	dat.Save("data/test.dat");
+	dat.Load("data/test.dat");
 
+
+	/*
 	nn.Load("nn/test.nn");
 	nn.Clear();
 
@@ -52,6 +55,9 @@ int main()
 	print_output(output, 1);
 
 	cout << "expected : " << dat.arr[1].output[0] << endl;
+	*/
+
+	//cout << dat.arr[0].input[0] << endl << dat.size << endl;
 
 
 
