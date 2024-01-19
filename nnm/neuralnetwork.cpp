@@ -58,9 +58,10 @@ void NeuralNetwork::Load(std::string path)
 {
 	std::ifstream file(path, std::ios::in | std::ios::binary);
 
+	delete[] layers;
+
 	file.read((char*)&layersNum, sizeof(unsigned));
 
-	delete[] layers;
 	layers = new Layer[layersNum];
 
 	for (unsigned i = 0; i < layersNum; i++)
@@ -150,4 +151,31 @@ void NeuralNetwork::Learn(Batch& batch, double learnRate, double momentum)
 
 	ApplyAllGradients(learnRate / ((double)batch.size), momentum);
 	ClearAllGradients();
+}
+
+
+double NeuralNetwork::Cost(Point& point)
+{
+	double* output;
+	output = CalculateOutput(point.input);
+
+	double cost = 0.;
+	double x;
+
+	for (unsigned out = 0; out < point.outputSize; out++)
+	{
+		x = output[out] - point.output[out];
+		cost += x * x;
+	}
+	return cost;
+}
+
+double NeuralNetwork::Cost(Batch& batch)
+{
+	double cost = 0.;
+	for (unsigned long long i = 0; i < batch.size; i++)
+	{
+		cost += Cost(*batch.arr[i]);
+	}
+	return cost / (double)batch.size;
 }

@@ -18,6 +18,9 @@ public:
 
 	double* CalculateOutput(double* input);
 
+	double Cost(Point& point);
+	double Cost(Batch& batch);
+
 	void UpdateAllGradients(Point& point);
 	void ClearAllGradients();
 	void ClearAllMomentumGradients();

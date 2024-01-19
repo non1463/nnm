@@ -6,14 +6,7 @@
 #include <iostream>
 #define print(e) std::cout<<e<<std::endl
 
-unsigned long long rn = 0ull;
 
-void XorShift64()
-{
-	rn ^= rn << 13;
-	rn ^= rn >> 7;
-	rn ^= rn << 17;
-}
 
 ///////////////////////POINT
 Point::Point()
@@ -116,9 +109,18 @@ Data::~Data()
 
 void Data::FillBatch(Batch& batch)
 {
+	unsigned long long rn = time(NULL);
+	rn ^= rn << 15;
+	rn ^= rn >> 5;
+	rn ^= rn << 19;
+	rn ^= rn << 13;
+	rn ^= rn >> 7;
+	rn ^= rn << 17;
 	for (unsigned long long i = 0; i < batch.size; i++)
 	{
-		XorShift64();
+		rn ^= rn << 13;
+		rn ^= rn >> 7;
+		rn ^= rn << 17;
 		batch.arr[i] = &arr[rn%size];
 	}
 }

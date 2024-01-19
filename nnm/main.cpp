@@ -24,35 +24,31 @@ double* output;
 NeuralNetwork nn;
 
 Data dat(2ull, 1u, 1u);
-Batch fullBatch(dat.GetAllPointsBatch());
+
+
+vector<Point> points;
+Point pt;
 
 
 int main()
 {
 
 	dat.Load("data/test.dat");
+	Batch fullBatch(dat.GetAllPointsBatch());
+	Batch testBatch;
+	testBatch.SetSize(1ull);
 
 	nn.Load("nn/test.nn");
-
-
-	unsigned _ = 100000u;
-	while (_--)
-	{
-		nn.Learn(fullBatch, 0.1, 0.);
-	}
-	nn.Save("nn/test.nn");
-
-
-	output = nn.CalculateOutput(test);
-
-	print_output(output, 1);
-
-	cout << "\nexpected : " << dat.arr[(int)test[0]].output[0] << endl;
-
-
 	
-
-	//cout << dat.arr[0].input[0] << endl << dat.size << endl;
+	char _;
+	do
+	{
+		dat.FillBatch(testBatch);
+		output = nn.CalculateOutput(testBatch.arr[0]->input);
+		cout << "intput : " << testBatch.arr[0]->input[0] << endl;
+		cout << "output : " << output[0] << endl;
+		cout << "expect : " << testBatch.arr[0]->output[0] << endl;
+	} while (cin >> _);
 
 
 
