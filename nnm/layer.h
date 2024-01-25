@@ -7,7 +7,7 @@ public:
 	Layer();
 	~Layer();
 
-	void Create(unsigned inputNodesNum, unsigned outputNodesNum, char activationFunc);
+	void Create(unsigned inputNodesNum, unsigned outputNodesNum, unsigned char activationFunc);
 	void Save(std::ofstream& file);
 	void Load(std::ifstream& file);
 	void Clear();
@@ -28,7 +28,6 @@ public:
 	double** weights;
 
 	double* input; // not stored into the class (pointer to the output of the last layer)
-	double* weightedInput;
 	double* output;
 
 private:
@@ -37,7 +36,7 @@ private:
 	double** costGradientW;
 	double** momentumGradientW;
 
-	char activationId; // 0->Linear, 1->Relu, 2->
+	unsigned char activationId;
 	double (*ActivationFunction)(double);
 	double (*ActivationDerivativeFromFunctionResult)(double); // /!\ calculate the derivative with the activation function result in argument 
 	void LoadActivation();

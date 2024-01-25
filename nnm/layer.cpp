@@ -1,8 +1,8 @@
 #include "layer.h"
 #include <fstream>
 
-#define deleteAllArrays delete[] biases;delete[] costGradientB;delete[] momentumGradientB;delete[] output;delete[] weightedInput;for (unsigned in = 0; in < inputNodesNum; in++){delete[] weights[in];delete[] costGradientW[in];delete[] momentumGradientW[in];}delete[] weights;delete[] costGradientW;delete[] momentumGradientW;
-#define createAllArrays biases = new double[outputNodesNum];costGradientB = new double[outputNodesNum];momentumGradientB = new double[outputNodesNum];output = new double[outputNodesNum];weightedInput = new double[outputNodesNum];weights = new double* [inputNodesNum];costGradientW = new double* [inputNodesNum];momentumGradientW = new double* [inputNodesNum];for (unsigned in = 0; in < inputNodesNum; in++){weights[in] = new double[outputNodesNum];costGradientW[in] = new double[outputNodesNum];momentumGradientW[in] = new double[outputNodesNum];}
+#define deleteAllArrays delete[] biases;delete[] costGradientB;delete[] momentumGradientB;delete[] output;for (unsigned in = 0; in < inputNodesNum; in++){delete[] weights[in];delete[] costGradientW[in];delete[] momentumGradientW[in];}delete[] weights;delete[] costGradientW;delete[] momentumGradientW;
+#define createAllArrays biases = new double[outputNodesNum];costGradientB = new double[outputNodesNum];momentumGradientB = new double[outputNodesNum];output = new double[outputNodesNum];weights = new double* [inputNodesNum];costGradientW = new double* [inputNodesNum];momentumGradientW = new double* [inputNodesNum];for (unsigned in = 0; in < inputNodesNum; in++){weights[in] = new double[outputNodesNum];costGradientW[in] = new double[outputNodesNum];momentumGradientW[in] = new double[outputNodesNum];}
 
 
 #include <iostream>
@@ -13,13 +13,15 @@ double Linear(double x) { return x; }
 double Relu(double x) { return std::max(0., x); }
 // tanh alredy defined
 double Sigmoid(double x) { return 1. / (1. + exp(-x)); }
-double Elu(double x) { return x<=0?exp(x)-1.:x; }
+double Elu(double x) { return x <= 0. ? exp(x) - 1. : x; }
+double LeakyRelu(double x) { return x >= 0. ? x : 0.1 * x; }
 
 double Linear_(double x) { return 1.; } // /!\ calculate the derivative with the activation function result in argument 
-double Relu_(double x) { return (x!=0.?1.:0.); }
+double Relu_(double x) { return x != 0. ? 1. : 0.; }
 double Tanh_(double x) { return 1. - (x * x); }
 double Sigmoid_(double x) { return x * (1. - x); }
 double Elu_(double x) { return x < 0. ? x+1. : 1.; }
+double LeakyRelu_(double x) { return x < 0. ? 0.1 : 1.; }
 
 void Layer::LoadActivation()
 {
@@ -45,6 +47,10 @@ void Layer::LoadActivation()
 		ActivationFunction = &Elu;
 		ActivationDerivativeFromFunctionResult = &Elu_;
 		break;
+	case 5:
+		ActivationFunction = &LeakyRelu;
+		ActivationDerivativeFromFunctionResult = &LeakyRelu_;
+		break;
 	}
 }
 
@@ -66,7 +72,7 @@ Layer::Layer()
 	inputNodesNum = 1u;
 	outputNodesNum = 1u;
 
-	activationId = 0;
+	activationId = 0u;
 	LoadActivation();
 
 	createAllArrays
@@ -78,7 +84,7 @@ Layer::~Layer()
 }
 
 
-void Layer::Create(unsigned inputNodesNum_, unsigned outputNodesNum_, char activationId_)
+void Layer::Create(unsigned inputNodesNum_, unsigned outputNodesNum_, unsigned char activationId_)
 {
 	// load activation function
 	activationId = activationId_;
@@ -101,7 +107,7 @@ void Layer::Save(std::ofstream& file)
 {
 	/* FILE FORMAT
 
-	activationFunc (char)
+	activationFunc (unsigned char)
 	inputNodesNum (unsigned)
 	outputNodesNum (unsigned)
 	biases (double)*out
@@ -109,7 +115,7 @@ void Layer::Save(std::ofstream& file)
 
 	*/
 
-	file.write((char*)&activationId, sizeof(char));
+	file.write((char*)&activationId, sizeof(unsigned char));
 	file.write((char*)&inputNodesNum, sizeof(unsigned));
 	file.write((char*)&outputNodesNum, sizeof(unsigned));
 
@@ -136,7 +142,7 @@ void Layer::Load(std::ifstream& file)
 {
 	/* FILE FORMAT
 
-	activationFunc (char)
+	activationFunc (unsigned char)
 	inputNodesNum (unsigned)
 	outputNodesNum (unsigned)
 	biases (double)*out
@@ -145,7 +151,7 @@ void Layer::Load(std::ifstream& file)
 	*/
 
 	// load activation function
-	file.read((char*)&activationId, sizeof(char));
+	file.read((char*)&activationId, sizeof(unsigned char));
 	LoadActivation();
 
 	// clear old arrays
@@ -215,12 +221,12 @@ double* Layer::CalculateOutput(double* input_)
 	input = input_;
 	for (unsigned out = 0; out < outputNodesNum; out++)
 	{
-		weightedInput[out] = biases[out];
+		output[out] = biases[out];
 		for (unsigned in = 0; in < inputNodesNum; in++)
 		{
-			weightedInput[out] += weights[in][out] * input[in];
-			output[out] = ActivationFunction(weightedInput[out]);
+			output[out] += weights[in][out] * input[in];
 		}
+		output[out] = ActivationFunction(output[out]);
 	}
 	return output;
 }
