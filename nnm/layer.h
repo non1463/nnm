@@ -1,6 +1,8 @@
 #pragma once
 #include <fstream>
 
+#include "mat.h"
+
 class Layer
 {
 public:
@@ -22,20 +24,20 @@ public:
 	void ClearMomentumGradient();
 	void ApplyGradient(double learnRate, double momentum);
 
-	unsigned inputNodesNum = 0u, outputNodesNum = 0u;
-
-	double* biases;
-	double** weights;
+	unsigned inputNodesNum, outputNodesNum;
 
 	double* input; // not stored into the class (pointer to the output of the last layer)
 	double* output;
 
 private:
+	double* biases;
+	double** weights;
+
 	double* costGradientB;
 	double* momentumGradientB;
 	double** costGradientW;
 	double** momentumGradientW;
-
+	
 	unsigned char activationId;
 	double (*ActivationFunction)(double);
 	double (*ActivationDerivativeFromFunctionResult)(double); // /!\ calculate the derivative with the activation function result in argument 
@@ -47,3 +49,14 @@ private:
 
 };
 
+class FullLayer : public Layer
+{
+private:
+
+};
+
+class ConvolutionLayer : public Layer
+{
+private:
+	unsigned inputShape, kernelShape, outputShape;
+};

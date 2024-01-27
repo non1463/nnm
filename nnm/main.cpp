@@ -4,6 +4,7 @@
 #include "neuralnetwork.h"
 #include "data.h"
 #include "nnm.h"
+#include "mat.h"
 using namespace std;
 
 #define print(e) cout<<e<<endl
@@ -46,38 +47,61 @@ double test[1] = { 1. };
 Data dat(2ull, sz[0], sz[layersNum-1]);
 
 
-vector<Point> points;
+//vector<Point> points;
 Point pt;
 
 
 
+
+
+const double inp_[9] = { 1,6,2,5,3,1,7,0,4 };
+const double ker_[4] = { 1,2,-1,0 };
+
+
+
+void print_matrix(Mat& mat)
+{
+	for (unsigned i = 0; i < mat.size; i++)
+	{
+		for (unsigned j = 0; j < mat.size; j++)
+		{
+			cout << mat.arr[i][j] << " ";
+		}
+		cout << endl;
+	}
+}
+
+
 int main()
 {
-	nn.Load("nn/test.nn");
-	dat.Load("data/test.dat");
+	Mat inp(3u);
+	Mat ker(2u);
+	Mat ou(2u);
 
-	Batch fullBatch = dat.GetAllPointsBatch();
 
-	int _ = 10000;
-	while (_--)
+	for (unsigned i = 0; i < inp.size; i++)
 	{
-		nn.Learn(fullBatch, 0.2, 0.9);
+		for (unsigned j = 0; j < inp.size; j++)
+		{
+			inp.arr[i][j] = inp_[j + inp.size * i];
+		}
+	}
+
+	for (unsigned i = 0; i < ker.size; i++)
+	{
+		for (unsigned j = 0; j < ker.size; j++)
+		{
+			ker.arr[i][j] = ker_[j + ker.size * i];
+		}
 	}
 
 
-	Batch testBatch;
-	testBatch.SetSize(1ull);
-
-	char tmp = '*';
-	while(tmp!='q')
-	{
-		dat.FillBatch(testBatch);
-
-		print_output(*testBatch.arr[0]);
-		cin >> tmp;
-	}
-
+	ou = inp * ker;
 	
+
+	print_matrix(ou);
 
 	return 0;
 }
+
+

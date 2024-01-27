@@ -130,10 +130,12 @@
     <ClCompile Include="data.cpp" />
     <ClCompile Include="layer.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="mat.cpp" />
     <ClCompile Include="neuralnetwork.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="data.h" />
+    <ClInclude Include="mat.h" />
     <ClInclude Include="nnm.h" />
     <ClInclude Include="layer.h" />
     <ClInclude Include="neuralnetwork.h" />
